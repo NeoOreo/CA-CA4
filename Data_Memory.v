@@ -9,12 +9,17 @@ module DATA_MEMORY(clk, rst, Address, Write_Data, Mem_Write, Mem_Read, Read_Data
 
     initial begin // initialize
         for (i = 0; i < 199; i=i+1)
-            ROM[i] <= 32'b0;
+            ROM[i] = 32'b0;
+        ROM[2] = 32'd100;
+        ROM[3] = 32'd200;
+
     end
     always @ (posedge clk, posedge rst) begin // sequential
         if (rst) begin
             for (i = 0; i < 199; i=i+1)
                 ROM[i] <= 32'b0;
+            ROM[2] <= 32'd100;
+            ROM[3] <= 32'd200;
         end
         else if (Mem_Write) begin
             ROM[Address] <= Write_Data;

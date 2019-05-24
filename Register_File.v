@@ -6,14 +6,11 @@ module REGISTER_FILE(clk, rst, Read_Register0, Read_Register1, Write_Register, W
     output [31:0] Read_Data0, Read_Data1;
     integer i, j;
     reg [31:0] Registers[0:31]; //reg [wordsize:0] array_name [0:arraysize]
-    initial begin
-        Registers[1] = 32'd100;
-        Registers[5] = 32'd200;
-    end
+
     always @ (posedge clk, posedge rst)begin
       if(rst) begin
-        //for (i = 0; i < 32; i = i + 1)
-        //  Registers[i] <= 0;
+        for (i = 0; i < 32; i = i + 1)
+          Registers[i] <= 0;
       end
       else if(Reg_Write != 0 && Write_Register != 0)
         Registers[Write_Register] <= Write_Data;

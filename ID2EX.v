@@ -11,12 +11,12 @@ module ID2EX(clk, rst, PCPlus4In, ReadDataRF0In, ReadDataRF1In, RtIn, RsIn, RdIn
     input [1:0] PCSrcIn;
     input [25:0] JumpAddressIn;
 
-    output [25:0] JumpAddress;
-    output RegWrite, MemRead, MemWrite, MemToReg, RegDst, ALUSrc;
-    output  [31:0] PCPlus4, ReadDataRF0, ReadDataRF1, SignExtended;
-    output  [4:0]  Rt, Rs, Rd;
-    output  [2:0] ALUControl;
-    output  [1:0] PCSrc;
+    output reg  [25:0] JumpAddress;
+    output reg RegWrite, MemRead, MemWrite, MemToReg, RegDst, ALUSrc;
+    output reg  [31:0] PCPlus4, ReadDataRF0, ReadDataRF1, SignExtended;
+    output reg  [4:0]  Rt, Rs, Rd;
+    output reg  [2:0] ALUControl;
+    output reg  [1:0] PCSrc;
 
     always @ (posedge clk, posedge rst) begin
         if (rst) begin

@@ -7,9 +7,9 @@ module MEM2WB(clk, rst, ALUResultIn,  ReadDataDMIn, MemToRegIn, RegWriteIn, Writ
     input [31:0] ALUResultIn, ReadDataDMIn;
     input [4:0]  WriteRegisterIn;
 
-    output [31:0] ALUResult, ReadDataDM;
-    output [4:0]  WriteRegister;
-    output MemToReg, RegWrite;
+    output reg [31:0] ALUResult, ReadDataDM;
+    output reg [4:0]  WriteRegister;
+    output reg MemToReg, RegWrite;
 
     always @ (posedge clk, posedge rst) begin
         if (rst) begin
@@ -17,7 +17,7 @@ module MEM2WB(clk, rst, ALUResultIn,  ReadDataDMIn, MemToRegIn, RegWriteIn, Writ
         end
         else begin
             ALUResult <= ALUResultin;
-            
+
             ReadDataDM <= ReadDataDMIn;
             WriteRegister <= WriteRegisterIn;
 

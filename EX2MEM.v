@@ -7,9 +7,9 @@ module EX2MEM(clk, rst, ALUResultIn, WriteRegisterIn, ReadDataRF1In, RegWriteIn,
     input [31:0] ALUResultIn;
     input [4:0]  WriteRegisterIn;
 
-    output RegWrite, MemRead, MemWrite, MemToReg;
-    output [31:0] ALUResult;
-    output [4:0]  WriteRegister;
+    output reg RegWrite, MemRead, MemWrite, MemToReg;
+    output reg [31:0] ALUResult;
+    output reg [4:0]  WriteRegister;
 
     always @ (posedge clk, posedge rst) begin
         if (rst) begin

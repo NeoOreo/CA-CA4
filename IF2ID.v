@@ -1,7 +1,7 @@
 `timescale 1ns / 1ns
 
 module IF2ID(clk, rst, PCPlus4In, InstructionIn, PCPlus4, Instruction, Flush, Write);
-    output [31:0] PCPlus4, Instruction;
+    output reg [31:0] PCPlus4, Instruction;
     input clk, rst, Flush, Write;
     input [31:0] PCPlus4In, InstructionIn;
 

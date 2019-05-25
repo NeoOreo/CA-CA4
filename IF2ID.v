@@ -7,7 +7,7 @@ module IF2ID(clk, rst, PCPlus4In, InstructionIn, PCPlus4, Instruction, Flush, Wr
 
     always @ (posedge clk, posedge rst) begin
         if (rst) begin
-            PcPlus4 <= 0;
+            PCPlus4 <= 0;
             Instruction <= 0;
         end
         else begin

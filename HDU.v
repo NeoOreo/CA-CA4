@@ -1,5 +1,5 @@
 module HDU (Rs, Rt, RtID2EX, MemReadID2EX, Write, NoOp);
-    output Write, NoOp;
+    output reg Write, NoOp;
     input MemReadID2EX;
     input [4:0] Rs, Rt, RtID2EX;
     always @ ( * ) begin

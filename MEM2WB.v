@@ -16,7 +16,7 @@ module MEM2WB(clk, rst, ALUResultIn,  ReadDataDMIn, MemToRegIn, RegWriteIn, Writ
             {ALUResult, ReadDataDM, WriteRegister, MemToReg, RegWrite} = 0;
         end
         else begin
-            ALUResult <= ALUResultin;
+            ALUResult <= ALUResultIn;
 
             ReadDataDM <= ReadDataDMIn;
             WriteRegister <= WriteRegisterIn;

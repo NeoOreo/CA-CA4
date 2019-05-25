@@ -7,9 +7,10 @@ module DP(clk, rst);
     wire [2:0]  ALUControlIn, ALUControlID2EX;
     wire [1:0] PCSrcIn, PCSrcID2EX, ForwardA, ForwardB, ALUOp;
     wire [4:0] ReadRegister0, ReadRegister1, WriteRegisterMEM2WB, RtID2EX, RsID2EX, RdID2EX, WriteRegisterIn;
-    wire Flush, ldPC, RegDstIn, RegWriteIn, ALUSrcIn, Zero, MemWriteIn, MemReadIn, Branch, Jump, MemToRegIn, NoOp, BranchN, RegWriteMEM2WB, RegWriteID2EX, MemReadID2EX, MemWriteID2EX, MemToRegID2EX, NoOpID2EX, RegDstID2EX, ALUSrcID2EX, MemWriteEX2MEM, MemReadEX2MEM, MemToRegEX2MEM, NoOpEX2MEM, RegWriteEX2MEM, WriteRegisterEX2MEM, MemToRegMEM2WB;
+    wire Flush, Write, ldPC, RegDstIn, RegWriteIn, ALUSrcIn, Zero, MemWriteIn, MemReadIn, Branch, Jump, MemToRegIn, NoOp, BranchN, RegWriteMEM2WB, RegWriteID2EX, MemReadID2EX, MemWriteID2EX, MemToRegID2EX, NoOpID2EX, RegDstID2EX, ALUSrcID2EX, MemWriteEX2MEM, MemReadEX2MEM, MemToRegEX2MEM, NoOpEX2MEM, RegWriteEX2MEM, WriteRegisterEX2MEM, MemToRegMEM2WB;
     assign PCPlus4 = PCOut + 32'd4;
     assign Flush = (PCsrc == 2'd2) ? 1 : 0;
+
 
     PCMUX #(.DATA_WIDTH(32)) PCMux({PCPlus4ID2EX[31:28], JumpAddressID2EX[25:0], 2'b00}, (SignExtendedID2EX << 2) + PCPlus4ID2EX, PCPlus4ID2EX, PCSrcID2EX, PCIn);
     REGISTER #(.DATA_WIDTH(32)) PC(clk, rst, Write & (~rst), PCIn, PCOut);
@@ -19,13 +20,13 @@ module DP(clk, rst);
     HDU hdu(InstructionIF2ID, InstructionIF2ID, RtID2EX, MemReadID2EX, Write, NoOp);
     SignExtend Extend(InstructionIF2ID[15:0], SignExtendedIn);
     CU cu(rst, InstructionIF2ID[31:26], RegDstIn, Branch, MemReadIn, MemWriteIn, MemToRegIn, Jump, ALUSrcIn, ALUOp, RegWriteIn, ldPC, BranchN, NoOp);
-    ALUCU Alucu(ALUOp, InstructionIF2ID[7:0], ALUControlIn);
+    ALUCU Alucu(ALUOp, InstructionIF2ID[5:0], ALUControlIn);
     REGISTER_FILE RF(clk, rst, InstructionIF2ID[25:21], InstructionIF2ID[20:16], WriteRegisterMEM2WB, WriteDataRF, RegWriteMEM2WB, ReadDataRF0In, ReadDataRF1In);
     assign Zero = (ReadDataRF0In == ReadDataRF1In) ? 1 : 0;
     assign PCSrcIn = ((Zero & Branch) || (~Zero & BranchN)) ? 2'd2 :
                      (Jump) ? 2'd3 :
                      (rst)  ? 2'd0 : 2'd1;
-
+    HDU hd(InstructionIF2ID[25:21], InstructionIF2ID[20:16], RtID2EX, MemReadID2EX, Write, NoOp);
     ID2EX RegID2EX(clk, rst, PCPlus4IF2ID, ReadDataRF0In,    ReadDataRF1In,    InstructionIF2ID[20:16], InstructionIF2ID[25:21], InstructionIF2ID[15:11], SignExtendedIn,    InstructionIF2ID[25:0], RegWriteIn,    MemReadIn,    MemWriteIn,    ALUControlIn,    MemToRegIn,    PCSrcIn,    RegDstIn,    ALUSrcIn,
                              PCPlus4ID2EX, ReadDataRF0ID2EX, ReadDataRF1ID2EX, RtID2EX,                 RsID2EX,                 RdID2EX,                 SignExtendedID2EX, JumpAddressID2EX,       RegWriteID2EX, MemReadID2EX, MemWriteID2EX, ALUControlID2EX, MemToRegID2EX, PCSrcID2EX, RegDstID2EX, ALUSrcID2EX);
     //#################
@@ -43,7 +44,6 @@ module DP(clk, rst);
                                ALUResultMEM2WB, ReadDataDMMEM2WB, MemToRegMEM2WB, RegWriteMEM2WB, WriteRegisterMEM2WB);
     //#################
     MUX #(.DATA_WIDTH(32)) MemToRegMux(ReadDataDMMEM2WB, ALUResultMEM2WB, MemToRegMEM2WB, WriteDataRF);
-
 endmodule
 
 

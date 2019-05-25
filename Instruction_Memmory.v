@@ -3,7 +3,6 @@ module INSTRUCTION_MEMORY(PC, Instruction);
     input [31:0] PC;
 
     output [31:0] Instruction;
-
     reg [7:0] ROM[0:2499]; //reg [wordsize:0] array_name [0:arraysize]
     initial begin
         $readmemb("Instructions.mem", ROM);

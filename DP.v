@@ -9,8 +9,7 @@ module DP(clk, rst);
     wire [4:0] ReadRegister0, ReadRegister1, WriteRegisterMEM2WB, RtID2EX, RsID2EX, RdID2EX, WriteRegisterIn;
     wire Flush, Write, ldPC, RegDstIn, RegWriteIn, ALUSrcIn, Zero, MemWriteIn, MemReadIn, Branch, Jump, MemToRegIn, NoOp, BranchN, RegWriteMEM2WB, RegWriteID2EX, MemReadID2EX, MemWriteID2EX, MemToRegID2EX, NoOpID2EX, RegDstID2EX, ALUSrcID2EX, MemWriteEX2MEM, MemReadEX2MEM, MemToRegEX2MEM, NoOpEX2MEM, RegWriteEX2MEM, WriteRegisterEX2MEM, MemToRegMEM2WB;
     assign PCPlus4 = PCOut + 32'd4;
-    assign Flush = (PCsrc == 2'd2) ? 1 : 0;
-
+    assign Flush = (PCSrcID2EX == 2'd2) ? 1 : 0;
 
     PCMUX #(.DATA_WIDTH(32)) PCMux({PCPlus4ID2EX[31:28], JumpAddressID2EX[25:0], 2'b00}, (SignExtendedID2EX << 2) + PCPlus4ID2EX, PCPlus4ID2EX, PCSrcID2EX, PCIn);
     REGISTER #(.DATA_WIDTH(32)) PC(clk, rst, Write & (~rst), PCIn, PCOut);
@@ -31,8 +30,8 @@ module DP(clk, rst);
                              PCPlus4ID2EX, ReadDataRF0ID2EX, ReadDataRF1ID2EX, RtID2EX,                 RsID2EX,                 RdID2EX,                 SignExtendedID2EX, JumpAddressID2EX,       RegWriteID2EX, MemReadID2EX, MemWriteID2EX, ALUControlID2EX, MemToRegID2EX, PCSrcID2EX, RegDstID2EX, ALUSrcID2EX);
     //#################
     FU fu(RsID2EX, RtID2EX, WriteRegisterEX2MEM, WriteRegisterMEM2WB, RegWriteEX2MEM, RegWriteMEM2WB, ForwardA, ForwardB);
-    FUMUX #(.DATA_WIDTH(32)) ALUSrcMuxB(ALUResultEX2MEM, WriteDataRF, ReadDataRF0ID2EX, ForwardA, A);
-    FUMUX #(.DATA_WIDTH(32)) ALUSrcMuxB(ALUResultEX2MEM, WriteDataRF, ReadDataRF1ID2EX, ForwardB, B);
+    FUMUX #(.DATA_WIDTH(32)) FUMuxA(ALUResultEX2MEM, WriteDataRF, ReadDataRF0ID2EX, ForwardA, A);
+    FUMUX #(.DATA_WIDTH(32)) FUMuxB(ALUResultEX2MEM, WriteDataRF, ReadDataRF1ID2EX, ForwardB, B);
     MUX #(.DATA_WIDTH(32)) ALUSrcMuxB(SignExtendedID2EX, B, ALUSrcID2EX, BIn);
     ALU Alu(A, BIn, ALUControlID2EX, ALUResultIn);
     MUX #(.DATA_WIDTH(32)) RegDstMux(RdID2EX, RtID2EX, RegDstID2EX, WriteRegisterIn);

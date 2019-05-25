@@ -1,5 +1,5 @@
 `timescale 1ns / 1ns
-module FUMUX(JAddress, BranchAddress, PcPlus4, FW, Out);
+module FUMUX(JAddress, BranchAddress, PcPlus4, sel, Out);
      parameter DATA_WIDTH;
      input [DATA_WIDTH-1:0] JAddress, BranchAddress, PcPlus4;
      input [1:0] sel;

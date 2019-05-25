@@ -1,8 +1,8 @@
 `timescale 1ns / 1ns
-module CU(rst, opCode, Reg_Dst, Branch, Mem_Read, Mem_Write, Mem_To_Reg, Jump, ALU_Src, ALU_Op, Reg_Write, ldPC, BranchN, NoOp);
+module CU(rst, opCode, Reg_Dst, Branch, Mem_Read, Mem_Write, Mem_To_Reg, Jump, ALU_Src, ALU_Op, Reg_Write, BranchN, NoOp);
     input [5:0] opCode;
     input rst, NoOp;
-    output Reg_Dst, Branch, Mem_Read, Mem_Write, Mem_To_Reg, Jump, ALU_Src, Reg_Write, ldPC, BranchN;
+    output Reg_Dst, Branch, Mem_Read, Mem_Write, Mem_To_Reg, Jump, ALU_Src, Reg_Write, BranchN;
     output [2:0] ALU_Op;
 
     assign Reg_Write = (NoOp == 0 && (opCode == 6'b0 || opCode == 6'b100011)) ? 1:0;

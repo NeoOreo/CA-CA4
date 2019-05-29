@@ -7,7 +7,7 @@ module REGISTER_FILE(clk, rst, Read_Register0, Read_Register1, Write_Register, W
     integer i, j;
     reg [31:0] Registers[0:31]; //reg [wordsize:0] array_name [0:arraysize]
 
-    always @ (posedge clk, posedge rst)begin
+    always @ (negedge clk, posedge rst)begin
       if(rst) begin
         for (i = 0; i < 32; i = i + 1)
           Registers[i] <= 0;

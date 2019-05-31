@@ -23,10 +23,7 @@ module ID2EX(clk, rst, PCPlus4In, ReadDataRF0In, ReadDataRF1In, RtIn, RsIn, RdIn
             {JumpAddress, RegWrite, MemRead, MemWrite, ALUControl, MemToReg, PCPlus4, ReadDataRF0, ReadDataRF1, SignExtended, Rt, Rs, Rd, PCSrc, RegDst, ALUSrc} = 0;
         end
         else begin
-<<<<<<< HEAD
-=======
-            
->>>>>>> meti-update
+
             JumpAddress <= JumpAddressIn;
             RegWrite <= RegWriteIn;
             MemRead <= MemReadIn;

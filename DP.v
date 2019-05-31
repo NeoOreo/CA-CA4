@@ -53,11 +53,7 @@ module TBDP ();
     initial begin
         #1;
         rst = 0;
-<<<<<<< HEAD
-        #1000000;
-=======
         #1000;
->>>>>>> meti-update
         $stop;
     end
 endmodule // TBDP

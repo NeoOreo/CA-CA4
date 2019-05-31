@@ -2,14 +2,14 @@
 module DP(clk, rst);
     input clk, rst;
     wire signed [31:0] PCOut, PCIn, PCPlus4, PCPlus4ID2EX, PCPlus4IF2ID, SignExtendedID2EX, SignExtendedIn;
-    wire [31:0] A, BIn, InstructionIn, InstructionIF2ID, WriteDataRF, ReadDataRF0In, ReadDataRF1In, B, ALUResultIn, ReadDataRF0ID2EX, ReadDataRF1ID2EX, ALUResultEX2MEM, ReadDataRF1EX2MEM, ReadDataDMIn, ALUResultMEM2WB, ReadDataDMMEM2WB;
+    wire [31:0] A, BIn, InstructionIn, InstructionIF2ID, WriteDataRF, ReadDataRF0In, ReadDataRF1In, B, BEX2MEM, ALUResultIn, ReadDataRF0ID2EX, ReadDataRF1ID2EX, ALUResultEX2MEM, ReadDataRF1EX2MEM, ReadDataDMIn, ALUResultMEM2WB, ReadDataDMMEM2WB;
     wire [25:0] JumpAddressID2EX;
     wire [2:0]  ALUControlIn, ALUControlID2EX;
     wire [1:0] PCSrcIn, PCSrcID2EX, ForwardA, ForwardB, ALUOp;
     wire [4:0] RtID2EX, RsID2EX, RdID2EX, WriteRegisterIn, WriteRegisterMEM2WB, WriteRegisterEX2MEM, RtEX2MEM;
     wire Flush, Write, RegDstIn, RegWriteIn, ALUSrcIn, Zero, MemWriteIn, MemReadIn, Branch, Jump, MemToRegIn, NoOp, BranchN, RegWriteMEM2WB, RegWriteID2EX, MemReadID2EX, MemWriteID2EX, MemToRegID2EX, RegDstID2EX, ALUSrcID2EX, MemWriteEX2MEM, MemReadEX2MEM, MemToRegEX2MEM, RegWriteEX2MEM, MemToRegMEM2WB;
     assign PCPlus4 = PCOut + 32'd4;
-    assign Flush = (PCSrcID2EX == 2'd2) ? 1 : 0;
+    assign Flush = (PCSrcIn == 2'd2 || PCSrcIn == 2'd3) ? 1 : 0;
 
     PCMUX #(.DATA_WIDTH(32)) PCMux({PCPlus4IF2ID[31:28], InstructionIF2ID[25:0], 2'b00}, (SignExtendedIn << 2) + PCPlus4IF2ID, PCPlus4, PCSrcIn, PCIn);
     REGISTER #(.DATA_WIDTH(32)) PC(clk, rst, Write & (~rst), PCIn, PCOut);
@@ -35,10 +35,10 @@ module DP(clk, rst);
     MUX #(.DATA_WIDTH(32)) ALUSrcMuxB(SignExtendedID2EX, B, ALUSrcID2EX, BIn);
     ALU Alu(A, BIn, ALUControlID2EX, ALUResultIn);
     MUX #(.DATA_WIDTH(32)) RegDstMux(RdID2EX, RtID2EX, RegDstID2EX, WriteRegisterIn);
-    EX2MEM RegEX2MEM(clk, rst, ALUResultIn,     WriteRegisterIn,     ReadDataRF1ID2EX,  RegWriteID2EX,  MemReadID2EX,  MemWriteID2EX,  MemToRegID2EX, RtID2EX,
-                               ALUResultEX2MEM, WriteRegisterEX2MEM, ReadDataRF1EX2MEM, RegWriteEX2MEM, MemReadEX2MEM, MemWriteEX2MEM, MemToRegEX2MEM, RtEX2MEM);
+    EX2MEM RegEX2MEM(clk, rst, ALUResultIn,     WriteRegisterIn,     B,       RegWriteID2EX,  MemReadID2EX,  MemWriteID2EX,  MemToRegID2EX, RtID2EX,
+                               ALUResultEX2MEM, WriteRegisterEX2MEM, BEX2MEM, RegWriteEX2MEM, MemReadEX2MEM, MemWriteEX2MEM, MemToRegEX2MEM, RtEX2MEM);
     //#################
-    DATA_MEMORY DM(clk, rst,   ALUResultEX2MEM, ReadDataRF1EX2MEM, MemWriteEX2MEM, MemReadEX2MEM, ReadDataDMIn);
+    DATA_MEMORY DM(clk, rst,   ALUResultEX2MEM, BEX2MEM, MemWriteEX2MEM, MemReadEX2MEM, ReadDataDMIn);
     MEM2WB RegMEM2WB(clk, rst, ALUResultEX2MEM, ReadDataDMIn,     MemToRegEX2MEM, RegWriteEX2MEM, WriteRegisterEX2MEM,
                                ALUResultMEM2WB, ReadDataDMMEM2WB, MemToRegMEM2WB, RegWriteMEM2WB, WriteRegisterMEM2WB);
     //#################

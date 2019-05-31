@@ -48,12 +48,16 @@ endmodule
 
 module TBDP ();
     reg clk = 0, rst = 1;
-    always #200 clk = ~clk;
+    always #1 clk = ~clk;
     DP ut(clk, rst);
     initial begin
-        #220;
+        #1;
         rst = 0;
+<<<<<<< HEAD
         #1000000;
+=======
+        #1000;
+>>>>>>> meti-update
         $stop;
     end
 endmodule // TBDP

@@ -1,34 +1,48 @@
 `timescale 1ns / 1ns
 module DP(clk, rst);
     input clk, rst;
-    wire signed [31:0] PCOut, PCIn, PcPlus4;
-    wire signed [31:0] SignExtended;
-    wire [31:0] Instruction, WriteDataRF, ReadDataRF0, ReadDataRF1, B, ALUResult, ReadDataDM;
-    wire [2:0] PCSrc, ALUControl;
-    wire [4:0] ReadRegister0, ReadRegister1, WriteRegister;
-    wire [1:0] ALUOp;
-    wire ldPC, RegDst, RegWrite, ALUSrc, Zero, MemWrite, MemRead, Branch, Jump, MemToReg, NoOp, BranchN;
-    assign PcPlus4 = PCOut + 32'd4;
-    PCMUX #(.DATA_WIDTH(32)) PCMux({PcPlus4[31:28], Instruction[25:0], 2'b00}, (SignExtended << 2) + PcPlus4, PcPlus4, PCSrc, PCIn);
-    REGISTER #(.DATA_WIDTH(32)) PC(clk, rst, ldPC, PCIn, PCOut);
-    INSTRUCTION_MEMORY IM(PCOut, Instruction);
-    SignExtend Extend(Instruction[15:0], SignExtended);
-    MUX #(.DATA_WIDTH(32)) RegDstMux(Instruction[15:11], Instruction[20:16], RegDst, WriteRegister);
-    REGISTER_FILE RF(clk, rst, Instruction[25:21], Instruction[20:16], WriteRegister, WriteDataRF, RegWrite, ReadDataRF0, ReadDataRF1);
+    wire signed [31:0] PCOut, PCIn, PCPlus4, PCPlus4ID2EX, PCPlus4IF2ID, SignExtendedID2EX, SignExtendedIn;
+    wire [31:0] A, BIn, InstructionIn, InstructionIF2ID, WriteDataRF, ReadDataRF0In, ReadDataRF1In, B, ALUResultIn, ReadDataRF0ID2EX, ReadDataRF1ID2EX, ALUResultEX2MEM, ReadDataRF1EX2MEM, ReadDataDMIn, ALUResultMEM2WB, ReadDataDMMEM2WB;
+    wire [25:0] JumpAddressID2EX;
+    wire [2:0]  ALUControlIn, ALUControlID2EX;
+    wire [1:0] PCSrcIn, PCSrcID2EX, ForwardA, ForwardB, ALUOp;
+    wire [4:0] RtID2EX, RsID2EX, RdID2EX, WriteRegisterIn, WriteRegisterMEM2WB, WriteRegisterEX2MEM, RtEX2MEM;
+    wire Flush, Write, RegDstIn, RegWriteIn, ALUSrcIn, Zero, MemWriteIn, MemReadIn, Branch, Jump, MemToRegIn, NoOp, BranchN, RegWriteMEM2WB, RegWriteID2EX, MemReadID2EX, MemWriteID2EX, MemToRegID2EX, RegDstID2EX, ALUSrcID2EX, MemWriteEX2MEM, MemReadEX2MEM, MemToRegEX2MEM, RegWriteEX2MEM, MemToRegMEM2WB;
+    assign PCPlus4 = PCOut + 32'd4;
+    assign Flush = (PCSrcID2EX == 2'd2) ? 1 : 0;
 
-    MUX #(.DATA_WIDTH(32)) ALUSrcMux(SignExtended, ReadDataRF1, ALUSrc, B);
-    ALU Alu(ReadDataRF0, B, ALUControl, ALUResult, Zero);
-    DATA_MEMORY DM(clk, rst, ALUResult, ReadDataRF1, MemWrite, MemRead, ReadDataDM);
-    MUX #(.DATA_WIDTH(32)) MemToRegMux(ReadDataDM, ALUResult, MemToReg, WriteDataRF);
-    assign PCSrc = ( (Zero & Branch) || (~Zero & BranchN) ) ? 2'd2 :
-                   (Jump) ? 2'd3 :
-                   (rst)  ? 2'd0 : 2'd1;
+    PCMUX #(.DATA_WIDTH(32)) PCMux({PCPlus4IF2ID[31:28], InstructionIF2ID[25:0], 2'b00}, (SignExtendedIn << 2) + PCPlus4IF2ID, PCPlus4, PCSrcIn, PCIn);
+    REGISTER #(.DATA_WIDTH(32)) PC(clk, rst, Write & (~rst), PCIn, PCOut);
+    INSTRUCTION_MEMORY IM(PCOut, InstructionIn);
+    IF2ID RegIF2ID(clk, rst, PCPlus4, InstructionIn, PCPlus4IF2ID, InstructionIF2ID, Flush, Write);
+    //###############
 
-    assign NoOp = (Instruction == 32'b0) ? 1 : 0;
-    CU cu(rst, Instruction[31:26], RegDst, Branch, MemRead, MemWrite, MemToReg, Jump, ALUSrc, ALUOp, RegWrite, NoOp, ldPC, BranchN);
-
-    ALUCU Alucu(ALUOp, Instruction[7:0], ALUControl);
-
+    SignExtend Extend(InstructionIF2ID[15:0], SignExtendedIn);
+    CU cu(rst, InstructionIF2ID[31:26], RegDstIn, Branch, MemReadIn, MemWriteIn, MemToRegIn, Jump, ALUSrcIn, ALUOp, RegWriteIn, BranchN, NoOp);
+    ALUCU Alucu(ALUOp, InstructionIF2ID[5:0], ALUControlIn);
+    REGISTER_FILE RF(clk, rst, InstructionIF2ID[25:21], InstructionIF2ID[20:16], WriteRegisterMEM2WB, WriteDataRF, RegWriteMEM2WB, ReadDataRF0In, ReadDataRF1In);
+    assign Zero = (ReadDataRF0In == ReadDataRF1In) ? 1 : 0;
+    assign PCSrcIn = ((Zero & Branch) || (~Zero & BranchN)) ? 2'd2 :
+                     (Jump) ? 2'd3 :
+                     (rst)  ? 2'd0 : 2'd1;
+    HDU hd(InstructionIF2ID[25:21], InstructionIF2ID[20:16], RtID2EX, MemReadID2EX, Write, NoOp);
+    ID2EX RegID2EX(clk, rst, PCPlus4IF2ID, ReadDataRF0In,    ReadDataRF1In,    InstructionIF2ID[20:16], InstructionIF2ID[25:21], InstructionIF2ID[15:11], SignExtendedIn,    InstructionIF2ID[25:0], RegWriteIn,    MemReadIn,    MemWriteIn,    ALUControlIn,    MemToRegIn,    PCSrcIn,    RegDstIn,    ALUSrcIn,
+                             PCPlus4ID2EX, ReadDataRF0ID2EX, ReadDataRF1ID2EX, RtID2EX,                 RsID2EX,                 RdID2EX,                 SignExtendedID2EX, JumpAddressID2EX,       RegWriteID2EX, MemReadID2EX, MemWriteID2EX, ALUControlID2EX, MemToRegID2EX, PCSrcID2EX, RegDstID2EX, ALUSrcID2EX);
+    //#################
+    FU fu(RsID2EX, RtID2EX, WriteRegisterEX2MEM, WriteRegisterMEM2WB, RegWriteEX2MEM, RegWriteMEM2WB, ForwardA, ForwardB);
+    FUMUX #(.DATA_WIDTH(32)) FUMuxA(ALUResultEX2MEM, WriteDataRF, ReadDataRF0ID2EX, ForwardA, A);
+    FUMUX #(.DATA_WIDTH(32)) FUMuxB(ALUResultEX2MEM, WriteDataRF, ReadDataRF1ID2EX, ForwardB, B);
+    MUX #(.DATA_WIDTH(32)) ALUSrcMuxB(SignExtendedID2EX, B, ALUSrcID2EX, BIn);
+    ALU Alu(A, BIn, ALUControlID2EX, ALUResultIn);
+    MUX #(.DATA_WIDTH(32)) RegDstMux(RdID2EX, RtID2EX, RegDstID2EX, WriteRegisterIn);
+    EX2MEM RegEX2MEM(clk, rst, ALUResultIn,     WriteRegisterIn,     ReadDataRF1ID2EX,  RegWriteID2EX,  MemReadID2EX,  MemWriteID2EX,  MemToRegID2EX, RtID2EX,
+                               ALUResultEX2MEM, WriteRegisterEX2MEM, ReadDataRF1EX2MEM, RegWriteEX2MEM, MemReadEX2MEM, MemWriteEX2MEM, MemToRegEX2MEM, RtEX2MEM);
+    //#################
+    DATA_MEMORY DM(clk, rst,   ALUResultEX2MEM, ReadDataRF1EX2MEM, MemWriteEX2MEM, MemReadEX2MEM, ReadDataDMIn);
+    MEM2WB RegMEM2WB(clk, rst, ALUResultEX2MEM, ReadDataDMIn,     MemToRegEX2MEM, RegWriteEX2MEM, WriteRegisterEX2MEM,
+                               ALUResultMEM2WB, ReadDataDMMEM2WB, MemToRegMEM2WB, RegWriteMEM2WB, WriteRegisterMEM2WB);
+    //#################
+    MUX #(.DATA_WIDTH(32)) MemToRegMux(ReadDataDMMEM2WB, ALUResultMEM2WB, MemToRegMEM2WB, WriteDataRF);
 endmodule
 
 
@@ -39,8 +53,6 @@ module TBDP ();
     initial begin
         #220;
         rst = 0;
-
-
         #1000000;
         $stop;
     end
